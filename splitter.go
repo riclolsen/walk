@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build windows
 // +build windows
 
 package walk
@@ -420,10 +421,16 @@ func (s *Splitter) onInsertedWidget(index int, widget Widget) (err error) {
 						bh := s.draggedHandle.BoundsPixels()
 
 						prev := closestVisibleWidget(handleIndex, -1)
+						if prev == nil {
+							return
+						}
 						bp := prev.BoundsPixels()
 						msep := minSizeEffective(createLayoutItemForWidget(prev))
 
 						next := closestVisibleWidget(handleIndex, 1)
+						if next == nil {
+							return
+						}
 						bn := next.BoundsPixels()
 						msen := minSizeEffective(createLayoutItemForWidget(next))
 
@@ -494,6 +501,10 @@ func (s *Splitter) onInsertedWidget(index int, widget Widget) (err error) {
 						prev := closestVisibleWidget(handleIndex, -1)
 						next := closestVisibleWidget(handleIndex, 1)
 
+						if prev == nil || next == nil {
+							return
+						}
+
 						s.draggedHandle = nil
 						dragHandle.SetBackground(NullBrush())
 						prev.AsWidgetBase().invalidateBorderInParent()
@@ -530,12 +541,16 @@ func (s *Splitter) onInsertedWidget(index int, widget Widget) (err error) {
 						layout := s.Layout().(*splitterLayout)
 
 						prevItem := layout.hwnd2Item[prev.Handle()]
-						prevItem.size = sizePrev
-						prevItem.oldExplicitSize = sizePrev
+						if prevItem != nil {
+							prevItem.size = sizePrev
+							prevItem.oldExplicitSize = sizePrev
+						}
 
 						nextItem := layout.hwnd2Item[next.Handle()]
-						nextItem.size = sizeNext
-						nextItem.oldExplicitSize = sizeNext
+						if nextItem != nil {
+							nextItem.size = sizeNext
+							nextItem.oldExplicitSize = sizeNext
+						}
 					})
 				}
 			}()
